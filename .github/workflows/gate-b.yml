@@ -6,6 +6,7 @@ on:
       - product_acceptance.py
       - external_module_contract.mjs
       - aas_oracle_adapter.py
+      - cross_validator_comparison.py
       - test_product_acceptance.py
       - .github/workflows/gate-b.yml
   workflow_dispatch:
@@ -42,6 +43,8 @@ jobs:
         run: python3 -m pip install aas_test_engines==1.0.3
       - name: Cross-check AAS metamodel with independent official oracle
         run: python3 aas_oracle_adapter.py --bundle gate-b-evidence
+      - name: Publish evidence-bound validator scope comparison
+        run: python3 cross_validator_comparison.py --bundle gate-b-evidence
       - name: Independently test acceptance evaluator
         run: python3 -m unittest -v test_product_acceptance.py
       - name: Independently inspect the real Gate B artifact
