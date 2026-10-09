@@ -1,0 +1,42 @@
+name: Gate B - pinned upstream observation
+on:
+  push:
+    paths:
+      - gate_b_bootstrap.py
+      - .github/workflows/gate-b.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize artifact directory
+        run: mkdir -p gate-b-evidence
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Clone pinned upstream (primary)
+        run: |
+          git clone --filter=blob:none https://github.com/OpenDPP/opendpp-interop.git /tmp/opendpp
+          git -C /tmp/opendpp checkout --detach 20211ecc2b63eb7664c571a8d629aeeed364491e
+          test "$(git -C /tmp/opendpp rev-parse HEAD)" = 20211ecc2b63eb7664c571a8d629aeeed364491e
+          npm ci --prefix /tmp/opendpp/validate
+      - name: Clone pinned upstream (independent replay)
+        run: |
+          git clone --filter=blob:none https://github.com/OpenDPP/opendpp-interop.git /tmp/opendpp-replay
+          git -C /tmp/opendpp-replay checkout --detach 20211ecc2b63eb7664c571a8d629aeeed364491e
+          test "$(git -C /tmp/opendpp-replay rev-parse HEAD)" = 20211ecc2b63eb7664c571a8d629aeeed364491e
+          npm ci --prefix /tmp/opendpp-replay/validate
+      - name: Execute and replay actual upstream validator
+        run: python3 gate_b_bootstrap.py
+      - name: Upload observation evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-b-real-observation
+          path: gate-b-evidence/
+          if-no-files-found: warn
+          retention-days: 90
