@@ -18,3 +18,13 @@ Gate B is considered **unverified** unless a real Actions run and its evidence a
 **Interpretation:** Two independently cloned and installed copies running on the **same GitHub Runner** agreed on the validator's acceptance/rejection behavior. This is a real public *structural-validation observation*, not an AAS semantic conformance verdict, production interoperability certification, byte-identical output proof, or an independent third-party audit. In particular, the acceptance of a duplicated `idShort` by a JSON Schema validator is not proof of a bug against its declared scope.
 
 **Remaining User Story gap:** The extended 17-story local implementation has not yet been fully committed to this repository; the initial public run exercises a standalone upstream observation bootstrap only. Cross-machine replay, independent reviewer inspection, CIRPASS-2 execution, and external adoption are not yet verified.
+
+## Independent acceptance integrated (2026-10-09)
+
+- [Gate B Run #37907736359](https://github.com/hippoley/dpp-coverage-probe/actions/runs/37907736359) **succeeded** on commit `aaa4eb3101b6ff0dd95a2d2e40e6a543414d75f6`.
+- Both pinned OpenDPP checkouts ran; the standalone `product_acceptance.py` checked input hashes, encoded raw output hashes, validator command-to-input binding, fixed upstream commit and outcome-level replay equivalence.
+- The CI also ran seven independent acceptance regression tests including tampered input, altered replay outcome, corrupt stdout, missing execution, duplicate JSON keys and symlink input.
+- The GitHub Artifact `gate-b-real-observation` (ID `11605890099`, ZIP SHA-256 `b1ae145cd5fbc4b383e4671480f59dfc1f77b7ce44ade9517fad76f1599091af`) contains `report.json`, original primary/replay evidence inputs, and `independent-acceptance.json`.
+- The validator accepts both tested inputs (exit code 0 for baseline and mutant). This establishes a reproducible *structural validator observation*, **not a semantic AAS conformance result**. Both checkouts ran on the same GitHub Actions machine; no independent organization has reviewed the result.
+
+The previous failed [Run #37907647029](https://github.com/hippoley/dpp-coverage-probe/actions/runs/37907647029) exposed a positive-test fixture with a wrong directory layout; this was fixed without relaxing the production acceptance policy.
