@@ -43,7 +43,8 @@ class AcceptanceTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.root = Path(self.tmp.name)
+        self.root = Path(self.tmp.name) / "gate-b-evidence"
+        self.root.mkdir()
         self.report = make_bundle(self.root)
 
     def save(self):
