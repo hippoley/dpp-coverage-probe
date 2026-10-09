@@ -67,13 +67,18 @@ def main():
         report["replay"] = replay
         shared = ["commit", "source_sha256", "validator_sha256", "mutant_sha256"]
         identical_inputs = all(primary[x] == replay[x] for x in shared)
+        # Independent validator outcomes are compared, not byte-identical logs:
+        # different input paths legitimately appear in stdout/stderr.
         outcomes_match = all(
             primary["legs"][k].get("executed") and replay["legs"][k].get("executed") and
-            primary["legs"][k].get("exit_code") == replay["legs"][k].get("exit_code") and
-            primary["legs"][k].get("stdout_raw_sha256") == replay["legs"][k].get("stdout_raw_sha256") and
-            primary["legs"][k].get("stderr_raw_sha256") == replay["legs"][k].get("stderr_raw_sha256")
+            primary["legs"][k].get("exit_code") in (0, 1) and
+            primary["legs"][k].get("exit_code") == replay["legs"][k].get("exit_code")
             for k in ("baseline", "mutant"))
-        report["overall"] = "REPLAY_MATCH" if identical_inputs and outcomes_match else "NOT_COMPLETED"
+        report["output_bytes_identical"] = all(
+            primary["legs"][k].get(f + "_raw_sha256") == replay["legs"][k].get(f + "_raw_sha256")
+            for k in ("baseline", "mutant") for f in ("stdout", "stderr"))
+        report["replay_claim_scope"] = "Independent checkout agrees on validator acceptance/rejection; raw logs are preserved, but need not be byte-identical."
+        report["overall"] = "REPLAY_OUTCOME_MATCH" if identical_inputs and outcomes_match else "NOT_COMPLETED"
         report["observed_exit_codes"] = {k: primary["legs"][k].get("exit_code") for k in ("baseline", "mutant")}
     except Exception as exc:
         report["blocker"] = repr(exc)
@@ -81,7 +86,7 @@ def main():
         (OUT / "report.json").write_text(json.dumps(report, indent=2) + "\n")
         print(json.dumps({"overall": report["overall"], "blocker": report.get("blocker"),
                           "observed_exit_codes": report.get("observed_exit_codes")}, indent=2))
-    return 0 if report["overall"] == "REPLAY_MATCH" else 2
+    return 0 if report["overall"] == "REPLAY_OUTCOME_MATCH" else 2
 
 if __name__ == "__main__":
     sys.exit(main())
