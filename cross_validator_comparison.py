@@ -4,6 +4,8 @@ A difference is COVERAGE_DIFFERENCE, never automatically an upstream bug.
 """
 import argparse
 import json
+import hashlib
+import re
 from pathlib import Path
 
 
@@ -15,13 +17,23 @@ def compare(root):
         oracle = json.loads((root / "aas-oracle-observation.json").read_text())
         if open_report.get("overall") != "REPLAY_OUTCOME_MATCH" or oracle.get("overall") != "OBSERVED":
             raise ValueError("evidence prerequisite missing")
-        import hashlib
+        checks = oracle.get("checks")
+        if not isinstance(checks, list) or len(checks) != 2:
+            raise ValueError("oracle must report exactly two checks")
+        if oracle.get("tool") != "aas_test_engines" or oracle.get("version_pin") != "1.0.3":
+            raise ValueError("unexpected oracle implementation or version")
         for kind in ("baseline", "mutant"):
             expected_name = "primary-" + kind + ".json"
             reference = open_report["primary"]["source_sha256" if kind == "baseline" else "mutant_sha256"]
             match = [row for row in oracle["checks"] if row.get("input") == expected_name]
             if len(match) != 1 or match[0].get("input_sha256") != reference:
                 raise ValueError("oracle input does not match upstream " + kind)
+            path = root / expected_name
+            if path.is_symlink() or not path.is_file():
+                raise ValueError("primary input missing or symlink: " + kind)
+            actual_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+            if not re.fullmatch(r"[0-9a-f]{64}", reference) or actual_hash != reference:
+                raise ValueError("on-disk primary input hash mismatch: " + kind)
             exit_code = open_report["primary"]["legs"][kind]["exit_code"]
             if exit_code not in (0, 1) or type(match[0].get("accepted")) is not bool:
                 raise ValueError("invalid validator outcome " + kind)
