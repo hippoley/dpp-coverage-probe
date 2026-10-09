@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - gate_b_bootstrap.py
+      - product_acceptance.py
+      - test_product_acceptance.py
       - .github/workflows/gate-b.yml
   workflow_dispatch:
 permissions:
