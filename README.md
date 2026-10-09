@@ -36,3 +36,15 @@ The previous failed [Run #37907647029](https://github.com/hippoley/dpp-coverage-
 - Four real API-to-CLI contract comparisons **PASS**: primary/replay × baseline/mutant. In all four cases the structural API returned valid and the CLI returned exit code 0. The report is in `external-module-contract.json` inside the GitHub Artifact.
 - Artifact ID `11607420706`, ZIP SHA-256 `b067c1d44629ea7e2a5a33aa603daff5cfe4a67c9f1568c2b97a3754efc31e8b`.
 - Scope limitation: structural API and CLI agreement is **not an independent semantic AAS conformance result**. Both use the same OpenDPP implementation. Subsequent work needs an independent standards oracle, held-out fixtures and cross-validator comparisons before any conformance claim.
+
+## Week delivery: independent AAS standards oracle (2026-10-09)
+
+A second **independently maintained** implementation is now executed on the same real sample inputs:
+
+- [Successful cross-validator run #37912978527](https://github.com/hippoley/dpp-coverage-probe/actions/runs/37912978527) at `6775d42f27f74cc206d29f6644e69bd92da2997d`.
+- New adapter `aas_oracle_adapter.py` calls `aas_test_engines.file.check_json_data` from `aas_test_engines==1.0.3` (official admin-shell-io tooling).
+- New `cross_validator_comparison.py` compares the *same SHA-256-addressed primary input* against the OpenDPP structural CLI result. Missing or mismatched prerequisite evidence fails closed.
+- Actual observation: **baseline** accepted by both; **duplicate sibling idShort mutant** accepted by OpenDPP's JSON Schema validator and rejected by official AAS Test Engines.
+- Published artifact `gate-b-real-observation`, ID `11606794592`, ZIP SHA-256 `c1067bf76dcba0a27e88cd68d66e5a8db0b71c6bd305efbce06198b649b239bf`. Includes `aas-oracle-observation.json` and `cross-validator-comparison.json`.
+- **Interpretation:** a real **coverage difference** between structural schema checking and AAS metamodel/constraint validation. It is **not** a demonstrated upstream vulnerability, nor universal correctness or conformance certification.
+- Unfinished: independently reviewed benchmark oracle labels, official rule attribution for every rejected field, third-party CIRPASS-2 integration, additional fixtures and benchmark holdout, broader package/standard version matrix. The former local 17-story product has not yet been imported in full.
