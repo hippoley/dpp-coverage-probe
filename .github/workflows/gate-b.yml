@@ -6,6 +6,7 @@ on:
       - product_acceptance.py
       - external_module_contract.mjs
       - aas_oracle_adapter.py
+      - aas_benchmark_matrix.py
       - cross_validator_comparison.py
       - test_product_acceptance.py
       - .github/workflows/gate-b.yml
@@ -43,6 +44,8 @@ jobs:
         run: python3 -m pip install aas_test_engines==1.0.3
       - name: Cross-check AAS metamodel with independent official oracle
         run: python3 aas_oracle_adapter.py --bundle gate-b-evidence
+      - name: Run seven-case real AAS benchmark matrix
+        run: python3 aas_benchmark_matrix.py
       - name: Publish evidence-bound validator scope comparison
         run: python3 cross_validator_comparison.py --bundle gate-b-evidence
       - name: Independently test acceptance evaluator
