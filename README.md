@@ -28,3 +28,11 @@ Gate B is considered **unverified** unless a real Actions run and its evidence a
 - The validator accepts both tested inputs (exit code 0 for baseline and mutant). This establishes a reproducible *structural validator observation*, **not a semantic AAS conformance result**. Both checkouts ran on the same GitHub Actions machine; no independent organization has reviewed the result.
 
 The previous failed [Run #37907647029](https://github.com/hippoley/dpp-coverage-probe/actions/runs/37907647029) exposed a positive-test fixture with a wrong directory layout; this was fixed without relaxing the production acceptance policy.
+
+## Direct external module integration (2026-10-09)
+
+- [Run #37911571983](https://github.com/hippoley/dpp-coverage-probe/actions/runs/37911571983) **successful** at commit `d3f2eba0ac471a56302019fd0580d8fd7a139156`.
+- `external_module_contract.mjs` dynamically imports `validateInterop("aas", payload)` from **actual upstream OpenDPP** (`validate/validate.mjs` at pinned commit `20211ecc2b63eb7664c571a8d629aeeed364491e`, Apache-2.0; underlying validation uses AJV 8), rather than copying its validator code.
+- Four real API-to-CLI contract comparisons **PASS**: primary/replay × baseline/mutant. In all four cases the structural API returned valid and the CLI returned exit code 0. The report is in `external-module-contract.json` inside the GitHub Artifact.
+- Artifact ID `11607420706`, ZIP SHA-256 `b067c1d44629ea7e2a5a33aa603daff5cfe4a67c9f1568c2b97a3754efc31e8b`.
+- Scope limitation: structural API and CLI agreement is **not an independent semantic AAS conformance result**. Both use the same OpenDPP implementation. Subsequent work needs an independent standards oracle, held-out fixtures and cross-validator comparisons before any conformance claim.
