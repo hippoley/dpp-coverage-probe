@@ -32,6 +32,11 @@ jobs:
           npm ci --prefix /tmp/opendpp-replay/validate
       - name: Execute and replay actual upstream validator
         run: python3 gate_b_bootstrap.py
+      - name: Independently test acceptance evaluator
+        run: python3 -m unittest -v test_product_acceptance.py
+      - name: Independently inspect the real Gate B artifact
+        if: always()
+        run: python3 product_acceptance.py --bundle gate-b-evidence
       - name: Upload observation evidence even on failure
         if: always()
         uses: actions/upload-artifact@v4
