@@ -9,12 +9,26 @@ import re
 from pathlib import Path
 
 
+def unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate JSON key: " + key)
+        result[key] = value
+    return result
+
+
 def compare(root):
     result = {"schema": "aas-cross-validator-comparison-v1", "overall": "NOT_COMPLETED",
               "cases": [], "interpretation": "Different declared scopes; disagreement is not proof of a defect."}
     try:
-        open_report = json.loads((root / "report.json").read_text())
-        oracle = json.loads((root / "aas-oracle-observation.json").read_text())
+        reports = []
+        for filename in ("report.json", "aas-oracle-observation.json"):
+            path = root / filename
+            if path.is_symlink() or not path.is_file() or path.stat().st_size > 2 * 1024 * 1024:
+                raise ValueError("unsafe, missing or oversized evidence: " + filename)
+            reports.append(json.loads(path.read_bytes(), object_pairs_hook=unique_object))
+        open_report, oracle = reports
         if open_report.get("overall") != "REPLAY_OUTCOME_MATCH" or oracle.get("overall") != "OBSERVED":
             raise ValueError("evidence prerequisite missing")
         checks = oracle.get("checks")
