@@ -7,6 +7,7 @@ not a claim about OpenDPP's documented JSON Schema scope.
 import argparse
 import hashlib
 import json
+from importlib.metadata import version as installed_version
 from pathlib import Path
 
 TOOL = "aas_test_engines"
@@ -18,6 +19,9 @@ def evaluate(bundle: Path):
     result = {"schema": "aas-independent-oracle-v1", "tool": TOOL, "version_pin": VERSION,
               "overall": "NOT_COMPLETED", "checks": [], "scope": "IDTA AAS metamodel and constraints, subject to selected Test Engines version"}
     try:
+        actual_version = installed_version(TOOL)
+        if actual_version != VERSION:
+            raise ValueError("oracle distribution version mismatch: " + actual_version)
         from aas_test_engines import file as aas_file
         for filename in INPUTS:
             path = bundle / filename
@@ -26,7 +30,9 @@ def evaluate(bundle: Path):
             data = path.read_bytes()
             parsed = json.loads(data)
             actual = aas_file.check_json_data(parsed)
-            accepted = bool(actual.ok())
+            accepted = actual.ok()
+            if type(accepted) is not bool:
+                raise TypeError("oracle ok() did not return bool")
             result["checks"].append({
                 "input": filename, "input_sha256": hashlib.sha256(data).hexdigest(),
                 "accepted": accepted, "oracle": TOOL, "version_pin": VERSION,
