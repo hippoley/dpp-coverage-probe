@@ -1,5 +1,6 @@
 name: Gate B - pinned upstream observation
 on:
+  pull_request:
   push:
     paths:
       - gate_b_bootstrap.py
