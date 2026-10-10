@@ -35,6 +35,12 @@ class CrossValidatorEvidenceTests(unittest.TestCase):
     def test_tampered_file_fails_closed(self):
         (self.root/"primary-mutant.json").write_text('{"tampered":true}')
         self.assertEqual(compare(self.root)["overall"],"NOT_COMPLETED")
+    def test_no_partial_results_on_second_input_failure(self):
+        (self.root/"primary-mutant.json").write_text('{"changed":true}')
+        result = compare(self.root)
+        self.assertEqual(result["overall"], "NOT_COMPLETED")
+        self.assertEqual(result["cases"], [])
+
     def test_symlink_fails_closed(self):
         p=self.root/"primary-baseline.json"
         p.unlink()
