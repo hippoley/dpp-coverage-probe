@@ -10,6 +10,10 @@ on:
       - test_aas_oracle_adapter.py
       - cross_validator_comparison.py
       - run_evidence_integration.py
+      - validate_dpp.py
+      - api_server.py
+      - batch_validate.py
+      - product_e2e.py
       - test_cross_validator_comparison.py
       - test_product_acceptance.py
       - .github/workflows/gate-b.yml
@@ -49,6 +53,8 @@ jobs:
         run: python3 -m unittest -v test_aas_oracle_adapter.py
       - name: Execute integrated external AAS engine and evidence comparison
         run: python3 run_evidence_integration.py --bundle gate-b-evidence
+      - name: Run real CLI, batch, and HTTP product integration against both external engines
+        run: python3 product_e2e.py
       - name: Adversarially test cross-validator evidence binding
         run: python3 -m unittest -v test_cross_validator_comparison.py
       - name: Independently test acceptance evaluator
