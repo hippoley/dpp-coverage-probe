@@ -11,6 +11,7 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+from dpp_client import DPPClient
 
 UPSTREAM = Path("/tmp/opendpp")
 SAMPLE = UPSTREAM / "samples/battery-aas-environment.json"
@@ -66,6 +67,10 @@ def main():
                 api = json.load(response)
             if api["overall"] != "OBSERVED" or set(api["validators"]) != {"opendpp", "aas_test_engines"}:
                 raise RuntimeError("real HTTP integration incomplete")
+            client = DPPClient("http://127.0.0.1:18765")
+            sdk_result = client.validate_file(SAMPLE)
+            if sdk_result["input"]["sha256"] != cli["input"]["sha256"]:
+                raise RuntimeError("third-party Python client integration mismatch")
             if api["input"]["sha256"] != cli["input"]["sha256"] or api["comparison"] != cli["comparison"]:
                 raise RuntimeError("API and CLI disagree for identical real input")
         finally:
@@ -77,7 +82,7 @@ def main():
                 server.wait()
         receipt = {"schema": "dpp-product-e2e-v1", "overall": "PASS",
                    "input_sha256": cli["input"]["sha256"], "cli": "OBSERVED",
-                   "batch": "OBSERVED", "http": "OBSERVED",
+                   "batch": "OBSERVED", "http": "OBSERVED", "python_client": "OBSERVED",
                    "comparison": cli["comparison"]}
         out = Path("gate-b-evidence")
         out.mkdir(exist_ok=True)
