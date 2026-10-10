@@ -22,6 +22,7 @@ def compare(root):
             raise ValueError("oracle must report exactly two checks")
         if oracle.get("tool") != "aas_test_engines" or oracle.get("version_pin") != "1.0.3":
             raise ValueError("unexpected oracle implementation or version")
+        verified_cases = []
         for kind in ("baseline", "mutant"):
             expected_name = "primary-" + kind + ".json"
             reference = open_report["primary"]["source_sha256" if kind == "baseline" else "mutant_sha256"]
@@ -39,10 +40,11 @@ def compare(root):
                 raise ValueError("invalid validator outcome " + kind)
             structural = (exit_code == 0)
             aas = match[0]["accepted"]
-            result["cases"].append({"case": kind, "sha256": reference,
+            verified_cases.append({"case": kind, "sha256": reference,
                                     "opendpp_structural_accepts": structural,
                                     "aas_test_engines_accepts": aas,
                                     "comparison": "AGREEMENT" if structural == aas else "COVERAGE_DIFFERENCE"})
+        result["cases"] = verified_cases
         result["overall"] = "OBSERVED"
     except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
         result["error"] = str(exc)
