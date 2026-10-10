@@ -50,7 +50,7 @@ def compare(root):
             if not re.fullmatch(r"[0-9a-f]{64}", reference) or actual_hash != reference:
                 raise ValueError("on-disk primary input hash mismatch: " + kind)
             exit_code = open_report["primary"]["legs"][kind]["exit_code"]
-            if exit_code not in (0, 1) or type(match[0].get("accepted")) is not bool:
+            if type(exit_code) is not int or exit_code not in (0, 1) or type(match[0].get("accepted")) is not bool:
                 raise ValueError("invalid validator outcome " + kind)
             structural = (exit_code == 0)
             aas = match[0]["accepted"]
