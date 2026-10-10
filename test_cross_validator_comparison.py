@@ -54,6 +54,20 @@ class CrossValidatorEvidenceTests(unittest.TestCase):
         self.oracle["version_pin"]="unverified"
         self.save()
         self.assertEqual(compare(self.root)["overall"],"NOT_COMPLETED")
+    def test_duplicate_json_keys_fails_closed(self):
+        (self.root/"aas-oracle-observation.json").write_text('{"overall":"OBSERVED","overall":"OBSERVED"}')
+        self.assertEqual(compare(self.root)["overall"], "NOT_COMPLETED")
+
+    def test_symlink_report_fails_closed(self):
+        p = self.root/"report.json"
+        p.unlink()
+        p.symlink_to(self.root/"aas-oracle-observation.json")
+        self.assertEqual(compare(self.root)["overall"], "NOT_COMPLETED")
+
+    def test_oversized_oracle_evidence_fails_closed(self):
+        (self.root/"aas-oracle-observation.json").write_bytes(b" " * (2*1024*1024+1))
+        self.assertEqual(compare(self.root)["overall"], "NOT_COMPLETED")
+
     def test_wrong_tool_fails_closed(self):
         self.oracle["tool"]="fake_oracle"
         self.save()
