@@ -68,6 +68,11 @@ class CrossValidatorEvidenceTests(unittest.TestCase):
         (self.root/"aas-oracle-observation.json").write_bytes(b" " * (2*1024*1024+1))
         self.assertEqual(compare(self.root)["overall"], "NOT_COMPLETED")
 
+    def test_boolean_process_exit_code_fails_closed(self):
+        self.report["primary"]["legs"]["baseline"]["exit_code"] = False
+        self.save()
+        self.assertEqual(compare(self.root)["overall"], "NOT_COMPLETED")
+
     def test_wrong_tool_fails_closed(self):
         self.oracle["tool"]="fake_oracle"
         self.save()
