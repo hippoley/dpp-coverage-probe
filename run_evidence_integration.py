@@ -19,6 +19,10 @@ def run(bundle: Path):
     try:
         if not bundle.is_dir() or bundle.is_symlink():
             raise ValueError("unsafe or missing evidence bundle")
+        for name in ("aas-oracle-observation.json", "cross-validator-comparison.json", "integration-result.json"):
+            target = bundle / name
+            if target.is_symlink():
+                raise ValueError("unsafe output symlink: " + name)
         oracle = evaluate(bundle)
         (bundle / "aas-oracle-observation.json").write_text(json.dumps(oracle, indent=2) + "\n")
         if oracle["overall"] != "OBSERVED":
